@@ -1,0 +1,11 @@
+obj/
+bin/
+.fake/
+.idea/
+.vs/
+.ionide/
+*.DotSettings.user
+build/
+publish/
+test-results/
+.vscode/
