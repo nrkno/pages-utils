@@ -1,0 +1,30 @@
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - Pages.Utils.FluentResults/**
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version
+        id: get-version
+        shell: bash
+        # version number as days since epoch
+        run: |
+          version=1.0.$(echo $(($(date +%s)/86400)))
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Authenticate to github packages
+        run: dotnet nuget add source --username nrkno --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/nrkno/index.json"
+        shell: bash
+      - name: Pack nuget
+        run: dotnet pack --configuration Release Pages.Utils.FluentResults/Pages.Utils.FluentResults.csproj -p:PackageVersion=${{steps.get-version.outputs.version}}
+        shell: bash
+      - name: Publish nuget
+        run: dotnet nuget push "Pages.Utils.FluentResults/bin/Release/Pages.Utils.FluentResults.${{steps.get-version.outputs.version}}.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/nrkno/index.json
+        shell: bash
